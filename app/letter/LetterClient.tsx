@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import LZString from 'lz-string';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 type Props = {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -15,6 +15,7 @@ function decodeLetterData(searchParams: { [key: string]: string | string[] | und
     if (searchParams.d) {
       const compressed = searchParams.d as string;
       const jsonString = LZString.decompressFromEncodedURIComponent(compressed);
+      
       if (jsonString) {
         const data = JSON.parse(jsonString);
         return {
@@ -43,6 +44,12 @@ function decodeLetterData(searchParams: { [key: string]: string | string[] | und
 
 export default function LetterClient({ searchParams }: Props) {
   const { to, from, message } = decodeLetterData(searchParams);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 클라이언트에서만 마운트 (Hydration 에러 방지)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // 눈송이 데이터를 한 번만 생성 (성능 최적화)
   const snowflakes = useMemo(() => 
@@ -81,8 +88,8 @@ export default function LetterClient({ searchParams }: Props) {
         🎁
       </div>
       
-      {/* 눈송이 효과 */}
-      {snowflakes.map((snow) => (
+      {/* 눈송이 효과 (클라이언트에서만 렌더링) */}
+      {isMounted && snowflakes.map((snow) => (
         <div
           key={snow.id}
           className="snowflake text-white"
@@ -152,10 +159,10 @@ export default function LetterClient({ searchParams }: Props) {
 
               <div className="text-right border-t border-red-900/30 pt-6">
                 <p className="text-base md:text-lg text-slate-300 font-light mb-2">
-                  {from} 올림
+                  From. {from}
                 </p>
                 <p className="text-sm text-slate-500 font-light">
-                  {new Date().getFullYear()} 크리스마스
+                  {new Date().getFullYear()} Christmas
                 </p>
               </div>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LZString from 'lz-string';
 
@@ -10,6 +10,12 @@ export default function Home() {
   const [from, setFrom] = useState('');
   const [message, setMessage] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 클라이언트에서만 마운트 (Hydration 에러 방지)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // 눈송이 데이터를 한 번만 생성 (성능 최적화)
   const snowflakes = useMemo(() => 
@@ -36,12 +42,18 @@ export default function Home() {
       message,
     };
     
+    console.log('Original data:', data);
+    
     // JSON을 문자열로 변환 후 압축 및 Base64 인코딩
     const jsonString = JSON.stringify(data);
+    console.log('JSON string:', jsonString);
+    
     const compressed = LZString.compressToEncodedURIComponent(jsonString);
+    console.log('Compressed:', compressed);
     
     // 짧은 URL 생성
     const url = `${window.location.origin}/letter?d=${compressed}`;
+    console.log('Generated URL:', url);
     setGeneratedUrl(url);
   };
 
@@ -95,8 +107,8 @@ export default function Home() {
         🦌
       </div>
       
-      {/* 눈송이 효과 */}
-      {snowflakes.map((snow) => (
+      {/* 눈송이 효과 (클라이언트에서만 렌더링) */}
+      {isMounted && snowflakes.map((snow) => (
         <div
           key={snow.id}
           className="snowflake text-white"

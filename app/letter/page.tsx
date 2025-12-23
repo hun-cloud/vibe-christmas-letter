@@ -5,7 +5,7 @@ import LetterClient from './LetterClient';
 import LZString from 'lz-string';
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // 압축된 데이터 디코딩 함수
@@ -42,7 +42,8 @@ function decodeLetterData(searchParams: { [key: string]: string | string[] | und
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { to, from } = decodeLetterData(searchParams);
+  const params = await searchParams;
+  const { to, from } = decodeLetterData(params);
   
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const ogImageUrl = `${baseUrl}/api/og?to=${encodeURIComponent(to)}&from=${encodeURIComponent(from)}`;
@@ -73,14 +74,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 
-export default function LetterPage({ searchParams }: Props) {
+export default async function LetterPage({ searchParams }: Props) {
+  const params = await searchParams;
+  
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-slate-300 text-lg font-light">편지를 불러오는 중... 🎄</div>
       </div>
     }>
-      <LetterClient searchParams={searchParams} />
+      <LetterClient searchParams={params} />
     </Suspense>
   );
 }
