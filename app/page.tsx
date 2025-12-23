@@ -1,64 +1,220 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+  const [to, setTo] = useState('');
+  const [from, setFrom] = useState('');
+  const [message, setMessage] = useState('');
+  const [generatedUrl, setGeneratedUrl] = useState('');
+
+  const generateUrl = () => {
+    if (!to || !message) {
+      alert('받는 사람과 메시지를 입력해주세요! 🎄');
+      return;
+    }
+
+    const params = new URLSearchParams({
+      to,
+      from: from || '익명',
+      message,
+    });
+
+    const url = `${window.location.origin}/letter?${params.toString()}`;
+    setGeneratedUrl(url);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generatedUrl);
+    alert('링크가 복사되었습니다! 🎅');
+  };
+
+  const previewLetter = () => {
+    if (generatedUrl) {
+      router.push(generatedUrl.replace(window.location.origin, ''));
+    }
+  };
+
+  const shareToKakao = () => {
+    if (!generatedUrl) return;
+    
+    // 카카오톡 공유하기 (웹 공유 API 사용)
+    if (navigator.share) {
+      navigator.share({
+        title: `${to}님에게 온 크리스마스 편지 🎄`,
+        text: `${from}님이 보낸 따뜻한 크리스마스 메시지`,
+        url: generatedUrl,
+      }).catch(() => {
+        // 공유 실패시 복사
+        copyToClipboard();
+      });
+    } else {
+      // Web Share API를 지원하지 않으면 복사
+      copyToClipboard();
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+      {/* 배경 그라데이션 오버레이 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-red-950/30 via-green-950/20 to-red-900/30 pointer-events-none" />
+      
+      {/* 크리스마스 장식 - 좌측 트리 */}
+      <div className="absolute left-4 md:left-12 top-1/2 -translate-y-1/2 text-6xl md:text-8xl opacity-20 pointer-events-none">
+        🎄
+      </div>
+      
+      {/* 크리스마스 장식 - 우측 산타 */}
+      <div className="absolute right-4 md:right-12 top-1/3 -translate-y-1/2 text-5xl md:text-7xl opacity-20 pointer-events-none">
+        🎅
+      </div>
+      
+      {/* 크리스마스 장식 - 우측 하단 루돌프 */}
+      <div className="absolute right-8 md:right-20 bottom-20 text-4xl md:text-6xl opacity-20 pointer-events-none">
+        🦌
+      </div>
+      
+      {/* 눈송이 효과 */}
+      {[...Array(50)].map((_, i) => (
+        <div
+          key={i}
+          className="snowflake text-white"
+          style={{
+            left: `${Math.random() * 100}%`,
+            animationDuration: `${Math.random() * 4 + 4}s`,
+            animationDelay: `${Math.random() * 5}s`,
+            fontSize: `${Math.random() * 8 + 8}px`,
+            opacity: Math.random() * 0.5 + 0.3,
+          }}
+        >
+          ❄
+        </div>
+      ))}
+
+      <main className="max-w-2xl w-full bg-slate-900/85 backdrop-blur-xl rounded-3xl shadow-2xl border border-red-900/30 p-8 md:p-12 relative z-10 fade-in">
+        {/* 상단 크리스마스 장식 */}
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-6xl md:text-7xl z-20">
+          🎄
+        </div>
+        
+        {/* 코너 장식 */}
+        <div className="absolute top-4 left-4 text-2xl shimmer">⭐</div>
+        <div className="absolute top-4 right-4 text-2xl shimmer" style={{ animationDelay: '1s' }}>🎁</div>
+        
+        {/* 헤더 */}
+        <div className="text-center mb-10 mt-6">
+          <div className="flex justify-center items-center gap-3 mb-4">
+            <span className="text-3xl md:text-4xl">🎅</span>
+            <div className="text-5xl md:text-6xl shimmer">✨</div>
+            <span className="text-3xl md:text-4xl">🦌</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-light text-slate-100 mb-3 tracking-wide">
+            크리스마스 편지
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <div className="w-20 h-px bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto mb-4" />
+          <p className="text-slate-400 text-sm md:text-base font-light">
+            특별한 사람에게 따뜻한 마음을 전하세요
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2 tracking-wide">
+              받는 사람 <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              placeholder="예: 철수"
+              className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all text-slate-100 placeholder-slate-500"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2 tracking-wide">
+              보내는 사람
+            </label>
+            <input
+              type="text"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              placeholder="예: 영희 (선택사항)"
+              className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all text-slate-100 placeholder-slate-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2 tracking-wide">
+              편지 내용 <span className="text-red-400">*</span>
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="따뜻한 크리스마스 메시지를 작성해주세요..."
+              rows={8}
+              className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all resize-none text-slate-100 placeholder-slate-500 leading-relaxed"
+            />
+          </div>
+
+          <button
+            onClick={generateUrl}
+            className="w-full bg-gradient-to-r from-red-600 via-red-700 to-green-700 text-white font-medium py-4 rounded-xl hover:from-red-500 hover:via-red-600 hover:to-green-600 transition-all transform hover:scale-[1.02] hover:shadow-lg hover:shadow-red-500/25 active:scale-[0.98]"
           >
-            Documentation
-          </a>
+            🎁 링크 생성하기
+          </button>
+
+          {generatedUrl && (
+            <div className="mt-6 p-6 bg-red-950/30 border border-red-800/50 rounded-xl backdrop-blur-sm fade-in">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl">🎄</span>
+                <p className="text-sm font-medium text-red-300 tracking-wide">
+                  생성된 링크
+                </p>
+              </div>
+              <div className="bg-slate-900/80 p-4 rounded-lg border border-slate-700/50 break-all text-sm text-slate-300 mb-4 font-mono">
+                {generatedUrl}
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
+                  <button
+                    onClick={copyToClipboard}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-3 rounded-lg transition-all border border-slate-700"
+                  >
+                    📋 링크 복사
+                  </button>
+                  <button
+                    onClick={previewLetter}
+                    className="flex-1 bg-gradient-to-r from-red-600 to-green-600 hover:from-red-500 hover:to-green-500 text-white font-medium py-3 rounded-lg transition-all"
+                  >
+                    👀 미리보기
+                  </button>
+                </div>
+                <button
+                  onClick={shareToKakao}
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  💬 카카오톡으로 공유하기
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
+        <div className="mt-10 text-center text-xs text-slate-500 font-light">
+          <div className="flex justify-center gap-3 mb-3 text-xl">
+            <span className="shimmer">🎄</span>
+            <span className="shimmer" style={{ animationDelay: '0.5s' }}>⭐</span>
+            <span className="shimmer" style={{ animationDelay: '1s' }}>🎁</span>
+          </div>
+          <p>링크를 특별한 사람에게 공유하세요</p>
+        </div>
+        
+        {/* 하단 장식 */}
+        <div className="absolute -bottom-6 left-8 text-3xl">🎁</div>
+        <div className="absolute -bottom-6 right-8 text-3xl">🔔</div>
       </main>
     </div>
   );
