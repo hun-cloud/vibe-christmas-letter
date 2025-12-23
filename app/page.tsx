@@ -153,7 +153,7 @@ export default function Home() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="따뜻한 크리스마스 메시지를 작성해주세요..."
+              placeholder="따뜻한 크리스마스 메시지를 작성해주세요...ㅎ"
               rows={8}
               className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all resize-none text-slate-100 placeholder-slate-500 leading-relaxed"
             />
