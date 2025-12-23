@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import LZString from 'lz-string';
 
 export default function Home() {
   const router = useRouter();
@@ -10,19 +11,37 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
 
+  // 눈송이 데이터를 한 번만 생성 (성능 최적화)
+  const snowflakes = useMemo(() => 
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      duration: Math.random() * 4 + 4,
+      delay: Math.random() * 5,
+      size: Math.random() * 8 + 8,
+      opacity: Math.random() * 0.5 + 0.3,
+    }))
+  , []);
+
   const generateUrl = () => {
     if (!to || !message) {
       alert('받는 사람과 메시지를 입력해주세요! 🎄');
       return;
     }
 
-    const params = new URLSearchParams({
+    // 데이터를 JSON으로 만들고 LZ-String으로 압축
+    const data = {
       to,
       from: from || '익명',
       message,
-    });
-
-    const url = `${window.location.origin}/letter?${params.toString()}`;
+    };
+    
+    // JSON을 문자열로 변환 후 압축 및 Base64 인코딩
+    const jsonString = JSON.stringify(data);
+    const compressed = LZString.compressToEncodedURIComponent(jsonString);
+    
+    // 짧은 URL 생성
+    const url = `${window.location.origin}/letter?d=${compressed}`;
     setGeneratedUrl(url);
   };
 
@@ -77,16 +96,16 @@ export default function Home() {
       </div>
       
       {/* 눈송이 효과 */}
-      {[...Array(50)].map((_, i) => (
+      {snowflakes.map((snow) => (
         <div
-          key={i}
+          key={snow.id}
           className="snowflake text-white"
           style={{
-            left: `${Math.random() * 100}%`,
-            animationDuration: `${Math.random() * 4 + 4}s`,
-            animationDelay: `${Math.random() * 5}s`,
-            fontSize: `${Math.random() * 8 + 8}px`,
-            opacity: Math.random() * 0.5 + 0.3,
+            left: `${snow.left}%`,
+            animationDuration: `${snow.duration}s`,
+            animationDelay: `${snow.delay}s`,
+            fontSize: `${snow.size}px`,
+            opacity: snow.opacity,
           }}
         >
           ❄

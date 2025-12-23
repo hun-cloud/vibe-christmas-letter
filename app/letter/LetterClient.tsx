@@ -1,15 +1,60 @@
 'use client';
 
 import Link from 'next/link';
+import LZString from 'lz-string';
+import { useMemo } from 'react';
 
 type Props = {
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
+// 압축된 데이터 디코딩 함수
+function decodeLetterData(searchParams: { [key: string]: string | string[] | undefined }) {
+  try {
+    // 새로운 방식: LZ-String 압축된 데이터
+    if (searchParams.d) {
+      const compressed = searchParams.d as string;
+      const jsonString = LZString.decompressFromEncodedURIComponent(compressed);
+      if (jsonString) {
+        const data = JSON.parse(jsonString);
+        return {
+          to: data.to || '친구',
+          from: data.from || '익명',
+          message: data.message || '메리 크리스마스! 🎄',
+        };
+      }
+    }
+    
+    // 기존 방식: URL 파라미터 (하위 호환성)
+    return {
+      to: (searchParams.to as string) || '친구',
+      from: (searchParams.from as string) || '익명',
+      message: (searchParams.message as string) || '메리 크리스마스! 🎄',
+    };
+  } catch (error) {
+    console.error('Error decoding letter data:', error);
+    return {
+      to: '친구',
+      from: '익명',
+      message: '메리 크리스마스! 🎄',
+    };
+  }
+}
+
 export default function LetterClient({ searchParams }: Props) {
-  const to = (searchParams.to as string) || '친구';
-  const from = (searchParams.from as string) || '익명';
-  const message = (searchParams.message as string) || '메리 크리스마스! 🎄';
+  const { to, from, message } = decodeLetterData(searchParams);
+
+  // 눈송이 데이터를 한 번만 생성 (성능 최적화)
+  const snowflakes = useMemo(() => 
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      duration: Math.random() * 4 + 4,
+      delay: Math.random() * 5,
+      size: Math.random() * 8 + 8,
+      opacity: Math.random() * 0.5 + 0.3,
+    }))
+  , []);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
@@ -37,16 +82,16 @@ export default function LetterClient({ searchParams }: Props) {
       </div>
       
       {/* 눈송이 효과 */}
-      {[...Array(50)].map((_, i) => (
+      {snowflakes.map((snow) => (
         <div
-          key={i}
+          key={snow.id}
           className="snowflake text-white"
           style={{
-            left: `${Math.random() * 100}%`,
-            animationDuration: `${Math.random() * 4 + 4}s`,
-            animationDelay: `${Math.random() * 5}s`,
-            fontSize: `${Math.random() * 8 + 8}px`,
-            opacity: Math.random() * 0.5 + 0.3,
+            left: `${snow.left}%`,
+            animationDuration: `${snow.duration}s`,
+            animationDelay: `${snow.delay}s`,
+            fontSize: `${snow.size}px`,
+            opacity: snow.opacity,
           }}
         >
           ❄
